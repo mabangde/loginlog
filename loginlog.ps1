@@ -11,13 +11,13 @@ elseif (!$evtx) {
 }
 
 if (!$evtx) {
-    Write-Host "No event log file specified. Please use the -evtx parameter to specify a file or use the -local parameter to load the local Security event log."
+    Write-Host "[!] No event log file specified. Please use the -evtx parameter to specify a file or use the -local parameter to load the local Security event log." -ForegroundColor Yellow
     return
 }
 
 $time=Get-Date -Format h:mm:ss
 $evtx=(Get-Item $evtx).fullname
-$outfile=(Get-Item $evtx).BaseName_login+".csv"
+$outfile=(Get-Item $evtx).BaseName+"_login"+".csv"
 
 $logsize=[int]((Get-Item $evtx).length/1MB)
 
@@ -67,7 +67,7 @@ filter Convert-DateTimeFormat
   } catch {}
 }
 
-[xml]$xmldoc=WEVTUtil qe  $evtx /q:"*[System[Provider[@Name='Microsoft-Windows-Security-Auditing'] and (EventID=4624 or EventID=4625)]]" /e:root /f:Xml  /lf
+[xml]$xmldoc=WEVTUtil qe  $evtx /q:"*[System[Provider[@Name='Microsoft-Windows-Security-Auditing'] and (EventID=4624 or EventID=4625)] and (EventData[Data[@Name='LogonType']='3'] or EventData[Data[@Name='LogonType']='10'])]" /e:root /f:Xml  /lf
 
 $xmlEvent=$xmldoc.root.Event
 
